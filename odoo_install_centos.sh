@@ -28,7 +28,7 @@ ODOO_VERSION="12.0"
 
 IS_ENTERPRISE="False"
 
-ODOO_MASTER_PASSWD="Str0n9_Pas$w0rD"
+ODOO_MASTER_PASSWD="Str0n9_PasSw0rD"
 
 ODOO_CONFIG="/etc/$ODOO_USER.conf"
 
@@ -49,7 +49,7 @@ echo -e "\n--- Installing Python3 --"
 sudo yum install python36 -y
 
 echo -e "\n---- Install python3 packages ----"
-sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools-y
+sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools -y
 python3.6 -m ensurepip
 #pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2 psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko #pytz pyusb greenlet xlrd 
 pip3 install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
@@ -143,40 +143,49 @@ fi
 
 sudo chmod 640 $ODOO_CONFIG
 
-echo -e "* Creating systemd config file"
+echo -e "\n---- Creating systemd config file"
 touch /etc/systemd/system/$ODOO_USER.service
-printf '[Unit] \n Description=Odoo12\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'Requires=postgresql-9.6.service\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'After=network.target postgresql-9.6.service\n; \n' >> /etc/systemd/system/$ODOO_USER.service
-printf '[Service] \n Type=simple\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'SyslogIdentifier=odoo12\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'PermissionsStartOnly=true\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'User=$ODOO_USER\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'Group=$ODOO_USER\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'ExecStart=$ODOO_HOME/$ODOO_USER/odoo-bin -c /etc/$ODOO_USER.conf\n' >> /etc/systemd/system/$ODOO_USER.service
-printf 'StandardOutput=journal+console\n' >> /etc/systemd/system/$ODOO_USER.service
-printf ' \n [Install] \n WantedBy=multi-user.target\n' >> /etc/systemd/system/$ODOO_USER.service
 
-echo -e "* Start ODOO on Startup"
+sudo echo "[Unit]" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "Description=Odoo12" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "Requires=postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "After=network.target postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "[Service]" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "Type=simple" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "SyslogIdentifier=odoo12" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "PermissionsStartOnly=true" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "User=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "Group=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "ExecStart=$ODOO_HOME/$ODOO_USER/odoo-bin -c /etc/$ODOO_USER.conf" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "StandardOutput=journal+console" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "[Install]" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "WantedBy=multi-user.target" >> /etc/systemd/system/$ODOO_USER.service
+
+echo -e "\n---- Start ODOO on Startup"
 sudo update-rc.d $ODOO_CONFIG defaults
 sudo systemctl daemon-reload
 
 chown -R $ODOO_USER: $ODOO_HOME
 chown $ODOO_USER: $ODOO_CONFIG
 
-echo -e "* Starting Odoo Service"
-etc/init.d/$ODOO_CONFIG start
+echo -e "\n---- Starting Odoo Service"
+
+sudo systemctl start $ODOO_USER.service
+sudo systemctl enable $ODOO_USER.service
+
 echo "-----------------------------------------------------------"
 echo "Done! The Odoo server is up and running. Specifications:"
+echo "-----------------------------------------------------------"
 echo "Port: $ODOO_PORT"
+echo "Master password: $ODOO_MASTER_PASSWD"
 echo "User service: $ODOO_USER"
 echo "User PostgreSQL: $ODOO_USER"
-echo "Code location: $ODOO_USER"
 echo "Addons folder: $ODOO_USER/$ODOO_CONFIG/addons/"
 echo "Start Odoo service: sudo service $ODOO_CONFIG start"
 echo "Stop Odoo service: sudo service $ODOO_CONFIG stop"
 echo "Restart Odoo service: sudo service $ODOO_CONFIG restart"
 echo "-----------------------------------------------------------"
 
-echo "Script is not completed...yet! :)"
+echo "---------------------- WARNING ----------------------------"
+echo "The script is in beta-mode ... and it's not yet tested! :] "
 
