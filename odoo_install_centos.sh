@@ -43,15 +43,16 @@ sudo yum upgrade -y
 # Install Dependencies
 #--------------------------------------------------
 echo -e "\n--- Dependencies & Tools --"
-sudo yum install epel-release wget git -y
+sudo yum install epel-release wget git gcc libxslt-devel bzip2-devel openldap-devel libjpeg-devel freetype-devel -y
+
 
 echo -e "\n--- Installing Python3 --"
 sudo yum install python36 -y
 
 echo -e "\n---- Install python3 packages ----"
-sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools -y
+sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools python-devel -y
 python3.6 -m ensurepip
-#pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2 psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko #pytz pyusb greenlet xlrd 
+pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2-binary psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko pytz pyusb greenlet xlrd num2words
 pip3 install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
 
 echo -e "\n--- Install other required packages"
@@ -62,15 +63,17 @@ npm install -g less-plugin-clean-css
 #--------------------------------------------------
 # Install PostgreSQL Server
 #--------------------------------------------------
+
 echo -e "\n---- Install PostgreSQL Server ----"
-yum install postgresql -y
+yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm -y
+yum install postgresql96 postgresql96-server postgresql96-contrib postgresql96-libs -y
 
 echo -e "\n---- Creating the ODOO PostgreSQL Database  ----"
-postgresql-setup initdb
+/usr/pgsql-9.6/bin/postgresql96-setup initdb
 
 echo -e "\n---- Enable & Start the ODOO PostgreSQL Database  ----"
-systemctl enable postgresql
-systemctl start postgresql
+systemctl start postgresql-9.6.service
+systemctl enable postgresql-9.6.service
 
 #--------------------------------------------------
 # Creating Odoo and PostgreSQL users
@@ -130,9 +133,9 @@ echo -e "\n---- Create server config file"
 
 sudo touch $ODOO_CONFIG
 
-sudo echo "[options]" >> $CONF_ODOO
+sudo echo "[options]" >> $ODOO_CONFIG
 sudo echo ";This is the password that allows database operations:" >> $ODOO_CONFIG
-sudo echo "Master_password = $ODOO_MASTER_PASSWD" >> $ODOO_CONFIG
+sudo echo "admin_passwd = $ODOO_MASTER_PASSWD" >> $ODOO_CONFIG
 sudo echo "xmlrpc_port = $ODOO_PORT" >> $ODOO_CONFIG
 sudo echo "logfile = /var/log/$ODOO_USER/$ODOO_USER.log" >> $ODOO_CONFIG
 if [ $IS_ENTERPRISE = "True" ]; then
@@ -148,8 +151,8 @@ touch /etc/systemd/system/$ODOO_USER.service
 
 sudo echo "[Unit]" >> /etc/systemd/system/$ODOO_USER.service
 sudo echo "Description=Odoo12" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "Requires=postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "After=network.target postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "#Requires=postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
+sudo echo "#After=network.target postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
 sudo echo "[Service]" >> /etc/systemd/system/$ODOO_USER.service
 sudo echo "Type=simple" >> /etc/systemd/system/$ODOO_USER.service
 sudo echo "SyslogIdentifier=odoo12" >> /etc/systemd/system/$ODOO_USER.service
@@ -162,7 +165,7 @@ sudo echo "[Install]" >> /etc/systemd/system/$ODOO_USER.service
 sudo echo "WantedBy=multi-user.target" >> /etc/systemd/system/$ODOO_USER.service
 
 echo -e "\n---- Start ODOO on Startup"
-sudo update-rc.d $ODOO_CONFIG defaults
+chmod +x /etc/systemd/system/$ODOO_USER.service
 sudo systemctl daemon-reload
 
 chown -R $ODOO_USER: $ODOO_HOME
@@ -186,6 +189,7 @@ echo "Stop Odoo service: sudo service $ODOO_CONFIG stop"
 echo "Restart Odoo service: sudo service $ODOO_CONFIG restart"
 echo "-----------------------------------------------------------"
 
+echo " "
 echo "---------------------- WARNING ----------------------------"
 echo "The script is in beta-mode ... and it's not yet tested! :] "
-
+echo "-----------------------------------------------------------"
