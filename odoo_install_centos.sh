@@ -7,9 +7,9 @@
 # Inspired by his work I have created similar script for automated Odoo installation on CentOS 7 server. 
 #-------------------------------------------------------------------------------
 # Make a new file:
-# sudo nano odoo_install_centos.sh
+# nano odoo_install_centos.sh
 # Place this content in it and then make the file executable:
-# sudo chmod +x odoo_install_centos.sh
+# chmod +x odoo_install_centos.sh
 # Execute the script to install Odoo:
 # ./odoo_install_centos
 ################################################################################
@@ -32,25 +32,39 @@ ODOO_MASTER_PASSWD="Str0n9_PasSw0rD"
 
 ODOO_CONFIG="/etc/$ODOO_USER.conf"
 
+echo "---------------------- WARNING ----------------------------"
+echo "The script is in beta-mode ... and it's not yet tested! :] "
+echo "-----------------------------------------------------------"
+echo " "
+
 #--------------------------------------------------
 # Update Server
 #--------------------------------------------------
 echo -e "\n---- Update Server ----"
-sudo yum update -y
-sudo yum upgrade -y
+
+yum update -y
+yum upgrade -y
 
 #--------------------------------------------------
 # Install Dependencies
 #--------------------------------------------------
+
 echo -e "\n--- Dependencies & Tools --"
-sudo yum install epel-release wget git gcc libxslt-devel bzip2-devel openldap-devel libjpeg-devel freetype-devel -y
 
+yum install epel-release wget git gcc libxslt-devel bzip2-devel openldap-devel libjpeg-devel freetype-devel -y
 
-echo -e "\n--- Installing Python3 --"
-sudo yum install python36 -y
+echo -e "\n--- Installing Python --"
 
-echo -e "\n---- Install python3 packages ----"
-sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools python-devel -y
+yum install python-pip -y
+pip install --upgrade pip
+pip install --upgrade setuptools
+pip install Babel decorator docutils ebaysdk feedparser gevent greenlet jcconv Jinja2 lxml Mako MarkupSafe mock ofxparse passlib Pillow psutil psycogreen psycopg2-binary pydot pyparsing pyPdf pyserial Python-Chart python-dateutil python-ldap python-openid pytz pyusb PyYAML qrcode reportlab requests six suds-jurko vatnumber vobject Werkzeug wsgiref XlsxWriter xlwt xlrd
+
+yum install python36 -y
+
+echo -e "\n---- Install python packages ----"
+
+yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools python-devel -y
 python3.6 -m ensurepip
 pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2-binary psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko pytz pyusb greenlet xlrd num2words
 pip3 install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
@@ -97,7 +111,7 @@ mkdir /var/log/$ODOO_USER
 # Install ODOO
 #--------------------------------------------------
 echo -e "\n==== Installing ODOO Server ===="
-sudo git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/odoo $ODOO_HOME_EXT/
+git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/odoo $ODOO_HOME_EXT/
 
 if [ $IS_ENTERPRISE = "True" ]; then
     # Odoo Enterprise install!
@@ -106,7 +120,7 @@ if [ $IS_ENTERPRISE = "True" ]; then
     mkdir $ODOO_HOME/enterprise
     mkdir $ODOO_HOME/enterprise/addons
 
-    GITHUB_RESPONSE=$(sudo git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
+    GITHUB_RESPONSE=$(git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
     while [[ $GITHUB_RESPONSE == *"Authentication"* ]]; do
         echo "------------------------WARNING------------------------------"
         echo "Your authentication with Github has failed! Please try again."
@@ -114,7 +128,7 @@ if [ $IS_ENTERPRISE = "True" ]; then
         echo "TIP: Press ctrl+c to stop this script."
         echo "-------------------------------------------------------------"
         echo " "
-        GITHUB_RESPONSE=$(sudo git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
+        GITHUB_RESPONSE=$(git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
     done
 
     echo -e "\n---- Added Enterprise code under $ODOO_HOME/enterprise/addons ----"
@@ -126,55 +140,57 @@ if [ $IS_ENTERPRISE = "True" ]; then
 fi
 
 echo -e "\n---- Create custom module directory ----"
+
+mv $ODOO_HOME_EXT/odoo.py $ODOO_HOME_EXT/odoo-bin
 mkdir $ODOO_HOME/custom
 mkdir $ODOO_HOME/custom/addons
 
 echo -e "\n---- Create server config file"
 
-sudo touch $ODOO_CONFIG
+touch $ODOO_CONFIG
 
-sudo echo "[options]" >> $ODOO_CONFIG
-sudo echo ";This is the password that allows database operations:" >> $ODOO_CONFIG
-sudo echo "admin_passwd = $ODOO_MASTER_PASSWD" >> $ODOO_CONFIG
-sudo echo "xmlrpc_port = $ODOO_PORT" >> $ODOO_CONFIG
-sudo echo "logfile = /var/log/$ODOO_USER/$ODOO_USER.log" >> $ODOO_CONFIG
+echo "[options]" >> $ODOO_CONFIG
+echo ";This is the password that allows database operations:" >> $ODOO_CONFIG
+echo "admin_passwd = $ODOO_MASTER_PASSWD" >> $ODOO_CONFIG
+echo "xmlrpc_port = $ODOO_PORT" >> $ODOO_CONFIG
+echo "logfile = /var/log/$ODOO_USER/$ODOO_USER.log" >> $ODOO_CONFIG
 if [ $IS_ENTERPRISE = "True" ]; then
-    sudo echo "addons_path=$ODOO_HOME/enterprise/addons,$ODOO_HOME_EXT/addons" >> $ODOO_CONFIG
+    echo "addons_path=$ODOO_HOME/enterprise/addons,$ODOO_HOME_EXT/addons" >> $ODOO_CONFIG
 else
-    sudo echo "addons_path=$ODOO_HOME_EXT/addons,$ODOO_HOME/custom/addons" >> $ODOO_CONFIG
+    echo "addons_path=$ODOO_HOME_EXT/addons,$ODOO_HOME/custom/addons" >> $ODOO_CONFIG
 fi
 
-sudo chmod 640 $ODOO_CONFIG
+chmod 640 $ODOO_CONFIG
 
 echo -e "\n---- Creating systemd config file"
 touch /etc/systemd/system/$ODOO_USER.service
 
-sudo echo "[Unit]" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "Description=Odoo12" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "#Requires=postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "#After=network.target postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "[Service]" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "Type=simple" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "SyslogIdentifier=odoo12" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "PermissionsStartOnly=true" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "User=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "Group=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "ExecStart=$ODOO_HOME/$ODOO_USER/odoo-bin -c /etc/$ODOO_USER.conf" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "StandardOutput=journal+console" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "[Install]" >> /etc/systemd/system/$ODOO_USER.service
-sudo echo "WantedBy=multi-user.target" >> /etc/systemd/system/$ODOO_USER.service
+echo "[Unit]" >> /etc/systemd/system/$ODOO_USER.service
+echo "Description=Odoo server" >> /etc/systemd/system/$ODOO_USER.service
+echo "#Requires=postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
+echo "#After=network.target postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
+echo "[Service]" >> /etc/systemd/system/$ODOO_USER.service
+echo "Type=simple" >> /etc/systemd/system/$ODOO_USER.service
+echo "SyslogIdentifier=odoo12" >> /etc/systemd/system/$ODOO_USER.service
+echo "PermissionsStartOnly=true" >> /etc/systemd/system/$ODOO_USER.service
+echo "User=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
+echo "Group=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
+echo "ExecStart=$ODOO_HOME/$ODOO_USER/odoo-bin -c /etc/$ODOO_USER.conf" >> /etc/systemd/system/$ODOO_USER.service
+echo "StandardOutput=journal+console" >> /etc/systemd/system/$ODOO_USER.service
+echo "[Install]" >> /etc/systemd/system/$ODOO_USER.service
+echo "WantedBy=multi-user.target" >> /etc/systemd/system/$ODOO_USER.service
 
 echo -e "\n---- Start ODOO on Startup"
 chmod +x /etc/systemd/system/$ODOO_USER.service
-sudo systemctl daemon-reload
+systemctl daemon-reload
 
 chown -R $ODOO_USER: $ODOO_HOME
 chown $ODOO_USER: $ODOO_CONFIG
 
 echo -e "\n---- Starting Odoo Service"
 
-sudo systemctl start $ODOO_USER.service
-sudo systemctl enable $ODOO_USER.service
+systemctl start $ODOO_USER.service
+systemctl enable $ODOO_USER.service
 
 echo "-----------------------------------------------------------"
 echo "Done! The Odoo server is up and running. Specifications:"
@@ -184,9 +200,9 @@ echo "Master password: $ODOO_MASTER_PASSWD"
 echo "User service: $ODOO_USER"
 echo "User PostgreSQL: $ODOO_USER"
 echo "Addons folder: $ODOO_USER/$ODOO_CONFIG/addons/"
-echo "Start Odoo service: sudo service $ODOO_CONFIG start"
-echo "Stop Odoo service: sudo service $ODOO_CONFIG stop"
-echo "Restart Odoo service: sudo service $ODOO_CONFIG restart"
+echo "Start Odoo service: service $ODOO_USER start"
+echo "Stop Odoo service: service $ODOO_USER stop"
+echo "Restart Odoo service: service $ODOO_USER restart"
 echo "-----------------------------------------------------------"
 
 echo " "
