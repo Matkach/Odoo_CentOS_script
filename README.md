@@ -8,14 +8,14 @@ Inspired by his work I have created similar script for automated Odoo installati
 Make a new file:
 <pre>sudo nano odoo_install_centos.sh</pre>
 
-Place this content in it and then make the file executable:
-sudo chmod +x odoo_install_centos.sh
+You can also modify the script if you would like and change the version you would like to install, the location of where it will installed, whether you install the enterprise version or not and most important you can change the master admin password you would like to use.
+
+After you make the desired changes, make sure you save them.
+
+Make the file executable:
+<pre>sudo chmod +x odoo_install_centos.sh</pre>
 
 Execute the script to install Odoo:
-./odoo_install_centos
+<pre>./odoo_install_centos</pre>
 
-Please note: You can also modify the script if you would like with:
-
-nano odoo_install.sh
-
-For example, you can change the version you would like to install, the location of where it will installed, whether you install the enterprise version or not and most important you can change the master admin password you would like to use.
+<code>Please note:</code> The script is only tested on a clean server and is still in a development mode. 
