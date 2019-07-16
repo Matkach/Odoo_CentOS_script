@@ -18,4 +18,4 @@ Make the file executable:
 Execute the script to install Odoo:
 <pre>./odoo_install_centos</pre>
 
-<code>Please note:</code> The script is only tested on a clean server and is still in a development mode. 
+<code>#Please note:</code> The script is only tested on a clean server and is still in a development mode. 
