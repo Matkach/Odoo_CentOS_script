@@ -14,32 +14,90 @@
 # ./odoo_install_centos
 ################################################################################
 
-ODOO_USER="odoo"
+#--------------------------------------------------
+# Questions for the user
+#--------------------------------------------------
+echo "Please insert the information required for the Odoo installation."
+echo ""
 
-ODOO_HOME="$ODOO_USER"
+echo -n "Insert Odoo user name: "
+read ODOO_USER
 
-ODOO_HOME_EXT="$ODOO_USER/$ODOO_USER"
+echo -n "Insert Odoo location (e.g. opt ): "
+read LOCATION
+ODOO_HOME="/$LOCATION/$ODOO_USER"
+mkdir -p $ODOO_HOME
 
-INSTALL_WKHTMLTOPDF="True"
+echo -n "Inset Odoo port number: "
+read ODOO_PORT
 
-ODOO_PORT="8069"
+echo -n "Insert Odoo version (e.g. 12.0): "
+read ODOO_VERSION
 
-ODOO_VERSION="12.0"
+#da se napravi uslov za da dodava .0 na verzijata ako ne e pravilno vnesena
 
-IS_ENTERPRISE="False"
+while true; do
+echo -n "Do you want Odoo Enterprise? "
+echo -n "Enter your choice (Y/N), or q for exit: "
+read ODOO_EDITON
 
-ODOO_MASTER_PASSWD="Str0n9_PasSw0rD"
+echo
 
+case $ODOO_EDITON in
+     Y)
+     ENTERPRISE_EDITON="Y"
+     echo "Thank you for choosing the Enterprise edition"
+     break
+     ;;
+     y)
+     ENTERPRISE_EDITON="Y"
+     echo "Thank you for choosing the Enterprise edition"
+     break
+     ;;
+     N)
+     ENTERPRISE_EDITON="N"
+     echo "OK, see you!"
+     break
+     ;;
+     n)
+     ENTERPRISE_EDITON="N"
+     echo "Thank you for choosing the Community Edition"
+     break
+     ;;
+     q)
+     echo "The quit option was selected, and the script has stopped. Goodbye, until the next time."
+     exit -1
+     break
+     ;;
+     Q)
+     echo "The quit option was selected, and the script has stopped. Goodbye, until the next time."
+     exit -1
+     break
+     ;;
+     *)
+     echo "That is not a valid choice, try with Y/N or type q for quit."
+     ;;
+esac  
+done
+
+echo -n "Please insert your Odoo Master Password: "
+read ODOO_MASTER_PASSWD
+
+ODOO_HOME_EXT="$ODOO_HOME/$ODOO_USER"
 ODOO_CONFIG="/etc/$ODOO_USER.conf"
 
+echo " "
 echo "---------------------- WARNING ----------------------------"
 echo "The script is in beta-mode ... and it's not yet tested! :] "
 echo "-----------------------------------------------------------"
 echo " "
 
+function install_odoo {
+
 #--------------------------------------------------
 # Update Server
 #--------------------------------------------------
+
 echo -e "\n---- Update Server ----"
 
 yum update -y
@@ -113,7 +171,7 @@ mkdir /var/log/$ODOO_USER
 echo -e "\n==== Installing ODOO Server ===="
 git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/odoo $ODOO_HOME_EXT/
 
-if [ $IS_ENTERPRISE = "True" ]; then
+if [ $ENTERPRISE_EDITON = "Y" ]; then
     # Odoo Enterprise install!
     echo -e "\n--- Create symlink for node"
     ln -s /usr/bin/nodejs /usr/bin/node
@@ -154,7 +212,7 @@ echo ";This is the password that allows database operations:" >> $ODOO_CONFIG
 echo "admin_passwd = $ODOO_MASTER_PASSWD" >> $ODOO_CONFIG
 echo "xmlrpc_port = $ODOO_PORT" >> $ODOO_CONFIG
 echo "logfile = /var/log/$ODOO_USER/$ODOO_USER.log" >> $ODOO_CONFIG
-if [ $IS_ENTERPRISE = "True" ]; then
+if [ $ENTERPRISE_EDITON = "Y" ]; then
     echo "addons_path=$ODOO_HOME/enterprise/addons,$ODOO_HOME_EXT/addons" >> $ODOO_CONFIG
 else
     echo "addons_path=$ODOO_HOME_EXT/addons,$ODOO_HOME/custom/addons" >> $ODOO_CONFIG
@@ -192,6 +250,8 @@ echo -e "\n---- Starting Odoo Service"
 systemctl start $ODOO_USER.service
 systemctl enable $ODOO_USER.service
 
+
+
 echo "-----------------------------------------------------------"
 echo "Done! The Odoo server is up and running. Specifications:"
 echo "-----------------------------------------------------------"
@@ -199,7 +259,7 @@ echo "Port: $ODOO_PORT"
 echo "Master password: $ODOO_MASTER_PASSWD"
 echo "User service: $ODOO_USER"
 echo "User PostgreSQL: $ODOO_USER"
-echo "Addons folder: $ODOO_USER/$ODOO_CONFIG/addons/"
+echo "Addons folder: $ODOO_HOME_EXT/addons and $ODOO_HOME/custom/addons"
 echo "Start Odoo service: service $ODOO_USER start"
 echo "Stop Odoo service: service $ODOO_USER stop"
 echo "Restart Odoo service: service $ODOO_USER restart"
@@ -209,3 +269,30 @@ echo " "
 echo "---------------------- WARNING ----------------------------"
 echo "The script is in beta-mode ... and it's not yet tested! :] "
 echo "-----------------------------------------------------------"
+}
+
+echo "-----------------------------------------------------------"
+echo "Your Odoo will be installed with the following specifications: "
+echo "-----------------------------------------------------------"
+echo "Odoo username: $ODOO_USER"
+echo "Location will be at: $ODOO_HOME"
+echo "Odoo port number: $ODOO_PORT"
+echo "Odoo Master password: $ODOO_MASTER_PASSWD"
+echo "Addons folder: $ODOO_HOME_EXT/addons and $ODOO_HOME/custom/addons"
+echo "Start Odoo service: service $ODOO_USER start"
+echo "Stop Odoo service: service $ODOO_USER stop"
+echo "Restart Odoo service: service $ODOO_USER restart"
+echo ""
+echo "-----------------------------------------------------------"
+echo "Do you want to proceed with the installation (y/n)? "
+read ODOO_INSTALL
+echo "-----------------------------------------------------------"
+
+if [ "$ODOO_INSTALL" = y ] || [ "$ODOO_INSTALL" = Y ]
+then
+  install_odoo
+
+else
+echo "The NO option was selected, and the script has stopped. Goodbye, until the next time."
+
+fi
