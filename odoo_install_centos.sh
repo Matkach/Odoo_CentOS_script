@@ -5,63 +5,97 @@
 #-------------------------------------------------------------------------------
 # This script is based on the installation script of Yenthe V.G (https://github.com/Yenthe666/InstallScript)
 # Inspired by his work I have created similar script for automated Odoo installation on CentOS 7 server. 
-#-------------------------------------------------------------------------------
-# Make a new file:
-# nano odoo_install_centos.sh
-# Place this content in it and then make the file executable:
-# chmod +x odoo_install_centos.sh
-# Execute the script to install Odoo:
-# ./odoo_install_centos
 ################################################################################
+
+LPURPLE='\033[1;35m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
 #--------------------------------------------------
 # Questions for the user
 #--------------------------------------------------
-echo "Please insert the information required for the Odoo installation."
+echo
+echo -e "Please insert the information required for the ${LPURPLE}Odoo${NC} installation."
 echo ""
 
-echo -n "Insert Odoo user name: "
+echo -n "Insert Odoo user name (default: odoo): "
 read ODOO_USER
 
-echo -n "Insert Odoo location (e.g. opt ): "
+ODOO_USER="${ODOO_USER:-odoo}"
+
+echo
+echo -e "You have selected the ${BLUE}$ODOO_USER${NC} as username"
+echo ""
+
+echo -n "Insert Odoo location (default: /opt/$ODOO_USER): "
 read LOCATION
-ODOO_HOME="/$LOCATION/$ODOO_USER"
+
+LOCATION="${LOCATION:-/opt/$ODOO_USER}"
+
+  if  [[ $LOCATION == / ]] || [[ $LOCATION == /* ]] ;
+    then
+        ODOO_HOME="$LOCATION/$ODOO_USER"
+    else
+        ODOO_HOME="/$LOCATION/$ODOO_USER"
+  fi
+
 mkdir -p $ODOO_HOME
 
-echo -n "Inset Odoo port number: "
+echo
+echo -e "You have selected the following location ${BLUE}$LOCATION${NC}"
+echo ""
+
+echo
+while ! [[ "$ODOO_PORT" =~ ^[0-9]+$ ]]
+do
+
+echo -n "Inset Odoo port number (default: 8069) : "
 read ODOO_PORT
+echo
 
-echo -n "Insert Odoo version (e.g. 12.0): "
-read ODOO_VERSION
+ODOO_PORT="${ODOO_PORT:-8069}"
 
-#da se napravi uslov za da dodava .0 na verzijata ako ne e pravilno vnesena
+done
 
+echo
+echo -e "You have selected the following port number: ${BLUE}$ODOO_PORT${NC}"
+echo ""
+
+echo
 while true; do
-echo -n "Do you want Odoo Enterprise? "
-echo -n "Enter your choice (Y/N), or q for exit: "
-read ODOO_EDITON
+echo
+echo -e "Select the Odoo version: "
+echo ""
+echo -e "${GREEN}1${NC}) Odoo version ${LPURPLE}12.0${NC}"
+echo ""
+echo -e "${GREEN}2${NC}) Odoo version ${LPURPLE}11.0${NC}"
+echo ""
+echo -e "${GREEN}3${NC}) Odoo version ${LPURPLE}10.0${NC}"
+echo ""
+echo -e "${GREEN}4${NC}) Odoo version  ${LPURPLE}9.0${NC}"
+echo ""
+echo -ne "Choose a number from ${GREEN}1${NC} to ${GREEN}4${NC}: " 
+read SELECT_VERSION
 
 echo
 
-case $ODOO_EDITON in
-     Y)
-     ENTERPRISE_EDITON="Y"
-     echo "Thank you for choosing the Enterprise edition"
+case $SELECT_VERSION in
+     1)
+     ODOO_VERSION="12.0"
      break
      ;;
-     y)
-     ENTERPRISE_EDITON="Y"
-     echo "Thank you for choosing the Enterprise edition"
+     2)
+     ODOO_VERSION="11.0"
      break
      ;;
-     N)
-     ENTERPRISE_EDITON="N"
-     echo "OK, see you!"
+     3)
+     ODOO_VERSION="10.0"
      break
      ;;
-     n)
-     ENTERPRISE_EDITON="N"
-     echo "Thank you for choosing the Community Edition"
+     4)
+     ODOO_VERSION="9.0"
      break
      ;;
      q)
@@ -75,24 +109,73 @@ case $ODOO_EDITON in
      break
      ;;
      *)
-     echo "That is not a valid choice, try with Y/N or type q for quit."
+     echo -e "The ${RED}$SELECT_VERSION${NC} is not a valid choice. Choose from ${GREEN}1${NC} to ${GREEN}4${NC} or type q for quit."
      ;;
 esac  
 done
 
-echo -n "Please insert your Odoo Master Password: "
-read ODOO_MASTER_PASSWD
+echo
+echo -e "You have selected the ${LPURPLE}Odoo${NC} version ${LPURPLE}$ODOO_VERSION ${NC}"
+echo ""
+
+echo
+while true; do
+echo -ne "Please select your ${LPURPLE}Odoo${NC} Edition. "
+echo ""
+echo -e "${GREEN}1${NC}) - ${LPURPLE}Enterprise edition${NC}"
+echo ""
+echo -e "${GREEN}2${NC}) - ${LPURPLE}Community Edition{NC}"
+echo ""
+echo -ne "Please select your choice: " 
+read ODOO_EDITON
+
+echo
+
+case $ODOO_EDITON in
+     1)
+     ENTERPRISE_EDITON="Y"
+     echo ""
+     echo -e "You have choose the ${LPURPLE}Enterprise Edition${NC}"
+     break
+     ;;
+     2)
+     ENTERPRISE_EDITON="N"
+     echo ""
+     echo -e "You have choose the ${LPURPLE}Community Edition${NC}"
+     break
+     ;;
+     q)
+     echo -e "The quit option was selected, and the script has stopped. Goodbye, until the next time."
+     exit -1
+     break
+     ;;
+     Q)
+     echo -e "The quit option was selected, and the script has stopped. Goodbye, until the next time."
+     exit -1
+     break
+     ;;
+     *)
+     echo -e "The ${RED}$ODOO_EDITON${NC} is not a valid choice. Please select from the offered options ${GREEN}1${NC}/${GREEN}2${NC} or you can type ${GREEN}q${NC} for quit."
+     ;;
+esac  
+done
+
+echo
+echo -ne "Please insert your ${LPURPLE}Odoo Master Password${NC}: "
+read -s ODOO_MASTER_PASSWD
+echo
 
 ODOO_HOME_EXT="$ODOO_HOME/$ODOO_USER"
 ODOO_CONFIG="/etc/$ODOO_USER.conf"
 
-echo " "
-echo "---------------------- WARNING ----------------------------"
+echo 
+echo ""
+echo -e "---------------------- ${RED}WARNING${NC} ----------------------------"
 echo "The script is in beta-mode ... and it's not yet tested! :] "
 echo "-----------------------------------------------------------"
-echo " "
+echo 
 
-function install_odoo {
+function install_odoo_centos {
 
 #--------------------------------------------------
 # Update Server
@@ -100,8 +183,8 @@ function install_odoo {
 
 echo -e "\n---- Update Server ----"
 
-yum update -y
-yum upgrade -y
+sudo yum update -y
+sudo yum upgrade -y
 
 #--------------------------------------------------
 # Install Dependencies
@@ -109,76 +192,78 @@ yum upgrade -y
 
 echo -e "\n--- Dependencies & Tools --"
 
-yum install epel-release wget git gcc libxslt-devel bzip2-devel openldap-devel libjpeg-devel freetype-devel -y
+sudo yum install epel-release wget git gcc libxslt-devel bzip2-devel openldap-devel libjpeg-devel freetype-devel -y
 
 echo -e "\n--- Installing Python --"
 
-yum install python-pip -y
-pip install --upgrade pip
-pip install --upgrade setuptools
-pip install Babel decorator docutils ebaysdk feedparser gevent greenlet jcconv Jinja2 lxml Mako MarkupSafe mock ofxparse passlib Pillow psutil psycogreen psycopg2-binary pydot pyparsing pyPdf pyserial Python-Chart python-dateutil python-ldap python-openid pytz pyusb PyYAML qrcode reportlab requests six suds-jurko vatnumber vobject Werkzeug wsgiref XlsxWriter xlwt xlrd
+sudo yum install python-pip -y
+sudo pip install --upgrade pip
+sudo pip install --upgrade setuptools
+#sudo pip install Babel decorator docutils ebaysdk feedparser gevent greenlet jcconv Jinja2 lxml Mako MarkupSafe mock ofxparse passlib Pillow psutil psycogreen psycopg2-binary pydot pyparsing pyPdf pyserial Python-Chart python-dateutil python-ldap python-openid pytz pyusb PyYAML qrcode reportlab requests six suds-jurko vatnumber vobject Werkzeug wsgiref XlsxWriter xlwt xlrd
+sudo pip install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
 
-yum install python36 -y
+sudo yum install python36 -y
 
 echo -e "\n---- Install python packages ----"
 
-yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools python-devel -y
+sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools python-devel -y
 python3.6 -m ensurepip
-pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2-binary psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko pytz pyusb greenlet xlrd num2words
-pip3 install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
+#sudo pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2-binary psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko pytz pyusb greenlet xlrd num2words
+sudo pip3 install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
 
 echo -e "\n--- Install other required packages"
-yum install nodejs npm -y
-npm install -g less
-npm install -g less-plugin-clean-css
+sudo yum install nodejs npm -y
+sudo npm install -g less
+sudo npm install -g less-plugin-clean-css
+sudo npm install -g rtlcss
 
 #--------------------------------------------------
 # Install PostgreSQL Server
 #--------------------------------------------------
 
 echo -e "\n---- Install PostgreSQL Server ----"
-yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm -y
-yum install postgresql96 postgresql96-server postgresql96-contrib postgresql96-libs -y
+sudo yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm -y
+sudo yum install postgresql96 postgresql96-server postgresql96-contrib postgresql96-libs -y
 
 echo -e "\n---- Creating the ODOO PostgreSQL Database  ----"
-/usr/pgsql-9.6/bin/postgresql96-setup initdb
+sudo /usr/pgsql-9.6/bin/postgresql96-setup initdb
 
 echo -e "\n---- Enable & Start the ODOO PostgreSQL Database  ----"
-systemctl start postgresql-9.6.service
-systemctl enable postgresql-9.6.service
+sudo systemctl start postgresql-9.6.service
+sudo systemctl enable postgresql-9.6.service
 
 #--------------------------------------------------
 # Creating Odoo and PostgreSQL users
 #--------------------------------------------------
 
 echo -e "\n---- Creating PostgreSQL user ----"
-su - postgres -c "createuser -s $ODOO_USER"
+sudo su - postgres -c "createuser -s $ODOO_USER"
 
 echo -e "\n---- Creating Odoo user ----"
-useradd -m -U -r -d $ODOO_HOME -s /bin/bash $ODOO_USER
+sudo useradd -m -U -r -d $ODOO_HOME -s /bin/bash $ODOO_USER
 
 #--------------------------------------------------
 # Install Wkhtmltopdf
 #--------------------------------------------------
-yum install wkhtmltopdf -y
+sudo yum install wkhtmltopdf -y
 
 echo -e "\n---- Create Log directory ----"
-mkdir /var/log/$ODOO_USER
+sudo mkdir /var/log/$ODOO_USER
 
 #--------------------------------------------------
 # Install ODOO
 #--------------------------------------------------
 echo -e "\n==== Installing ODOO Server ===="
-git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/odoo $ODOO_HOME_EXT/
+sudo git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/odoo $ODOO_HOME_EXT/
 
 if [ $ENTERPRISE_EDITON = "Y" ]; then
     # Odoo Enterprise install!
     echo -e "\n--- Create symlink for node"
-    ln -s /usr/bin/nodejs /usr/bin/node
-    mkdir $ODOO_HOME/enterprise
-    mkdir $ODOO_HOME/enterprise/addons
+    sudo ln -s /usr/bin/nodejs /usr/bin/node
+    sudo mkdir $ODOO_HOME/enterprise
+    sudo mkdir $ODOO_HOME/enterprise/addons
 
-    GITHUB_RESPONSE=$(git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
+    GITHUB_RESPONSE=$(sudo git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
     while [[ $GITHUB_RESPONSE == *"Authentication"* ]]; do
         echo "------------------------WARNING------------------------------"
         echo "Your authentication with Github has failed! Please try again."
@@ -186,71 +271,70 @@ if [ $ENTERPRISE_EDITON = "Y" ]; then
         echo "TIP: Press ctrl+c to stop this script."
         echo "-------------------------------------------------------------"
         echo " "
-        GITHUB_RESPONSE=$(git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
+        GITHUB_RESPONSE=$(sudo git clone --depth 1 --branch $ODOO_VERSION https://www.github.com/odoo/enterprise "$ODOO_HOME/enterprise/addons" 2>&1)
     done
 
     echo -e "\n---- Added Enterprise code under $ODOO_HOME/enterprise/addons ----"
     echo -e "\n---- Installing Enterprise specific libraries ----"
-    pip3 install num2words ofxparse
-    yum install nodejs npm
-    npm install -g less
-    npm install -g less-plugin-clean-css
+    sudo pip3 install num2words ofxparse
+    sudo yum install nodejs npm
+    sudo npm install -g less
+    sudo npm install -g less-plugin-clean-css
 fi
 
 echo -e "\n---- Create custom module directory ----"
 
-mv $ODOO_HOME_EXT/odoo.py $ODOO_HOME_EXT/odoo-bin
-mkdir $ODOO_HOME/custom
-mkdir $ODOO_HOME/custom/addons
+sudo mv $ODOO_HOME_EXT/odoo.py $ODOO_HOME_EXT/odoo-bin
+sudo mkdir $ODOO_HOME/custom
+sudo mkdir $ODOO_HOME/custom/addons
 
 echo -e "\n---- Create server config file"
 
-touch $ODOO_CONFIG
+sudo su root -c "touch '$ODOO_CONFIG'"
 
-echo "[options]" >> $ODOO_CONFIG
-echo ";This is the password that allows database operations:" >> $ODOO_CONFIG
-echo "admin_passwd = $ODOO_MASTER_PASSWD" >> $ODOO_CONFIG
-echo "xmlrpc_port = $ODOO_PORT" >> $ODOO_CONFIG
-echo "logfile = /var/log/$ODOO_USER/$ODOO_USER.log" >> $ODOO_CONFIG
+sudo su root -c "echo "[options]" >> $ODOO_CONFIG"
+sudo su root -c "echo ';This is the password that allows database operations:' >> $ODOO_CONFIG"
+sudo su root -c "echo 'admin_passwd = $ODOO_MASTER_PASSWD' >> $ODOO_CONFIG"
+sudo su root -c "echo 'xmlrpc_port = $ODOO_PORT' >> $ODOO_CONFIG"
+sudo su root -c "echo 'logfile = /var/log/$ODOO_USER/$ODOO_USER.log' >> $ODOO_CONFIG"
 if [ $ENTERPRISE_EDITON = "Y" ]; then
-    echo "addons_path=$ODOO_HOME/enterprise/addons,$ODOO_HOME_EXT/addons" >> $ODOO_CONFIG
+    sudo su root -c "echo 'addons_path=$ODOO_HOME/enterprise/addons,$ODOO_HOME_EXT/addons' >> $ODOO_CONFIG"
 else
-    echo "addons_path=$ODOO_HOME_EXT/addons,$ODOO_HOME/custom/addons" >> $ODOO_CONFIG
+    sudo su root -c "echo 'addons_path=$ODOO_HOME_EXT/addons,$ODOO_HOME/custom/addons' >> $ODOO_CONFIG"
 fi
 
-chmod 640 $ODOO_CONFIG
+sudo chmod 640 $ODOO_CONFIG
 
 echo -e "\n---- Creating systemd config file"
-touch /etc/systemd/system/$ODOO_USER.service
+sudo touch /etc/systemd/system/$ODOO_USER.service
 
-echo "[Unit]" >> /etc/systemd/system/$ODOO_USER.service
-echo "Description=Odoo server" >> /etc/systemd/system/$ODOO_USER.service
-echo "#Requires=postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
-echo "#After=network.target postgresql-9.6.service" >> /etc/systemd/system/$ODOO_USER.service
-echo "[Service]" >> /etc/systemd/system/$ODOO_USER.service
-echo "Type=simple" >> /etc/systemd/system/$ODOO_USER.service
-echo "SyslogIdentifier=odoo12" >> /etc/systemd/system/$ODOO_USER.service
-echo "PermissionsStartOnly=true" >> /etc/systemd/system/$ODOO_USER.service
-echo "User=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
-echo "Group=$ODOO_USER" >> /etc/systemd/system/$ODOO_USER.service
-echo "ExecStart=$ODOO_HOME/$ODOO_USER/odoo-bin -c /etc/$ODOO_USER.conf" >> /etc/systemd/system/$ODOO_USER.service
-echo "StandardOutput=journal+console" >> /etc/systemd/system/$ODOO_USER.service
-echo "[Install]" >> /etc/systemd/system/$ODOO_USER.service
-echo "WantedBy=multi-user.target" >> /etc/systemd/system/$ODOO_USER.service
+sudo su root -c "echo "[Unit]" >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'Description=Odoo server' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo '#Requires=postgresql-9.6.service' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo '#After=network.target postgresql-9.6.service' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo "[Service]" >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'Type=simple' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'SyslogIdentifier=odoo12' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'PermissionsStartOnly=true' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'User=$ODOO_USER' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'Group=$ODOO_USER' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'ExecStart=$ODOO_HOME/$ODOO_USER/odoo-bin -c /etc/$ODOO_USER.conf' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'StandardOutput=journal+console' >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo "[Install]" >> /etc/systemd/system/$ODOO_USER.service"
+sudo su root -c "echo 'WantedBy=multi-user.target' >> /etc/systemd/system/$ODOO_USER.service"
 
 echo -e "\n---- Start ODOO on Startup"
-chmod +x /etc/systemd/system/$ODOO_USER.service
-systemctl daemon-reload
+sudo chmod +x /etc/systemd/system/$ODOO_USER.service
+sudo systemctl daemon-reload
 
-chown -R $ODOO_USER: $ODOO_HOME
-chown $ODOO_USER: $ODOO_CONFIG
+sudo chown -R $ODOO_USER: $ODOO_HOME
+sudo chown $ODOO_USER: $ODOO_CONFIG
 
 echo -e "\n---- Starting Odoo Service"
 
-systemctl start $ODOO_USER.service
-systemctl enable $ODOO_USER.service
-
-
+sudo systemctl start $ODOO_USER.service
+sudo systemctl enable $ODOO_USER.service
+sudo systemctl status $ODOO_USER.service
 
 echo "-----------------------------------------------------------"
 echo "Done! The Odoo server is up and running. Specifications:"
@@ -264,16 +348,15 @@ echo "Start Odoo service: service $ODOO_USER start"
 echo "Stop Odoo service: service $ODOO_USER stop"
 echo "Restart Odoo service: service $ODOO_USER restart"
 echo "-----------------------------------------------------------"
-
 echo " "
-echo "---------------------- WARNING ----------------------------"
-echo "The script is in beta-mode ... and it's not yet tested! :] "
-echo "-----------------------------------------------------------"
+
 }
 
-echo "-----------------------------------------------------------"
+echo
+while true; do
+echo "---------------------------------------------------------------"
 echo "Your Odoo will be installed with the following specifications: "
-echo "-----------------------------------------------------------"
+echo "---------------------------------------------------------------"
 echo "Odoo username: $ODOO_USER"
 echo "Location will be at: $ODOO_HOME"
 echo "Odoo port number: $ODOO_PORT"
@@ -284,15 +367,58 @@ echo "Stop Odoo service: service $ODOO_USER stop"
 echo "Restart Odoo service: service $ODOO_USER restart"
 echo ""
 echo "-----------------------------------------------------------"
-echo "Do you want to proceed with the installation (y/n)? "
-read ODOO_INSTALL
+echo -n "Do you want to proceed with the installation (y/n)? "
+read FINAL_QUESTION
 echo "-----------------------------------------------------------"
 
+echo
+
+case $FINAL_QUESTION in
+     Y)
+     ODOO_INSTALL="Y"
+     echo ""
+     echo -e "Please wait. The installation will begin shortly"
+     break
+     ;;
+     y)
+     ODOO_INSTALL="y"
+     echo ""
+     echo -e "Please wait. The installation will begin shortly"
+     break
+     ;;
+     N)
+     ODOO_INSTALL="n"
+     echo ""
+     echo -e "You have choose NO. Bye Bye."
+     exit -1
+     break
+     ;;
+     n)
+     ODOO_INSTALL="N"
+     echo ""
+     echo -e "You have choose NO. Bye Bye."
+     exit -1
+     break
+     ;;
+     q)
+     echo -e "The quit option was selected, and the script has stopped. Goodbye, until the next time."
+     exit -1
+     break
+     ;;
+     Q)
+     echo -e "The quit option was selected, and the script has stopped. Goodbye, until the next time."
+     exit -1
+     break
+     ;;
+     *)
+     echo -e "The ${RED}$FINAL_QUESTION${NC} is not a valid choice, try with ${GREEN}Y${NC}/${GREEN}N${NC} or type ${GREEN}q${NC} for quit."
+     ;;
+esac  
+done
+
 if [ "$ODOO_INSTALL" = y ] || [ "$ODOO_INSTALL" = Y ]
-then
-  install_odoo
-
+    then
+        install_odoo_centos
 else
-echo "The NO option was selected, and the script has stopped. Goodbye, until the next time."
-
-fi
+                    exit 0
+    fi
