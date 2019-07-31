@@ -122,9 +122,9 @@ echo
 while true; do
 echo -ne "Please select your ${LPURPLE}Odoo${NC} Edition. "
 echo ""
-echo -e "${GREEN}1${NC}) - ${LPURPLE}Enterprise edition${NC}"
+echo -e "${GREEN}1${NC}) - Enterprise edition"
 echo ""
-echo -e "${GREEN}2${NC}) - ${LPURPLE}Community Edition{NC}"
+echo -e "${GREEN}2${NC}) - Community Edition"
 echo ""
 echo -ne "Please select your choice: " 
 read ODOO_EDITON
