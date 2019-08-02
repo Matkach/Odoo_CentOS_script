@@ -197,9 +197,9 @@ sudo yum install epel-release wget git gcc libxslt-devel bzip2-devel openldap-de
 echo -e "\n--- Installing Python --"
 
 sudo yum install python-pip -y
-sudo pip install --upgrade pip
+#sudo pip install --upgrade pip
 sudo pip install --upgrade setuptools
-#sudo pip install Babel decorator docutils ebaysdk feedparser gevent greenlet jcconv Jinja2 lxml Mako MarkupSafe mock ofxparse passlib Pillow psutil psycogreen psycopg2-binary pydot pyparsing pyPdf pyserial Python-Chart python-dateutil python-ldap python-openid pytz pyusb PyYAML qrcode reportlab requests six suds-jurko vatnumber vobject Werkzeug wsgiref XlsxWriter xlwt xlrd
+sudo pip install Babel decorator docutils ebaysdk feedparser gevent greenlet jcconv Jinja2 lxml Mako MarkupSafe mock ofxparse passlib Pillow psutil psycogreen psycopg2-binary pydot pyparsing pyPdf pyserial Python-Chart python-dateutil python-ldap python-openid pytz pyusb PyYAML qrcode reportlab requests six suds-jurko vatnumber vobject Werkzeug wsgiref XlsxWriter xlwt xlrd
 sudo pip install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
 
 sudo yum install python36 -y
@@ -208,7 +208,7 @@ echo -e "\n---- Install python packages ----"
 
 sudo yum install python36-devel libxslt-devel libxml2-devel openldap-devel python36-setuptools python-devel -y
 python3.6 -m ensurepip
-#sudo pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2-binary psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko pytz pyusb greenlet xlrd num2words
+sudo pip3 install pypdf2 Babel passlib Werkzeug decorator python-dateutil pyyaml psycopg2-binary psutil html2text docutils lxml pillow reportlab ninja2 requests gdata XlsxWriter vobject python-openid pyparsing pydot mock mako Jinja2 ebaysdk feedparser xlwt psycogreen suds-jurko pytz pyusb greenlet xlrd num2words
 sudo pip3 install -r https://github.com/odoo/odoo/raw/$ODOO_VERSION/requirements.txt
 
 echo -e "\n--- Install other required packages"
